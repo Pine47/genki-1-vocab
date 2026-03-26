@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genki 1 — Vocab Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --bg2: #161618;
+    --bg3: #1e1e21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8e6e0;
+    --text2: #8a8880;
+    --text3: #555450;
+    --accent: #c8a96e;
+    --accent-dim: rgba(200,169,110,0.12);
+    --green: #5fa87a;
+    --green-dim: rgba(95,168,122,0.12);
+    --red: #c46a5a;
+    --red-dim: rgba(196,106,90,0.12);
+    --blue: #6a8fc4;
+    --blue-dim: rgba(106,143,196,0.12);
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .shell {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .streak-badge {
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 4px 12px;
+    border-radius: 99px;
+    border: 1px solid rgba(200,169,110,0.2);
+    letter-spacing: 0.05em;
+  }
+
+  .nav {
+    display: flex;
+    gap: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 1.25rem;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 9px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .nav-btn:hover { color: var(--text); background: var(--bg3); }
+  .nav-btn.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
+
+  /* Chapter selector */
+  .chapter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .chapter-label {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .chapter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .ch-pill {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .ch-pill.on { border-color: var(--border2); color: var(--text2); background: var(--bg3); }
+  .ch-pill.on.all-btn { color: var(--accent); border-color: rgba(200,169,110,0.3); background: var(--accent-dim); }
+
+  /* Direction toggle */
+  .dir-row {
+    display: flex;
+    gap: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 1.25rem;
+  }
+  .dir-btn {
+    flex: 1;
+    padding: 7px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .dir-btn:hover { color: var(--text); background: var(--bg3); }
+  .dir-btn.active { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+  .stat-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .stat-num { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .prog-wrap {
+    background: var(--bg2);
+    border-radius: 99px;
+    height: 3px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 1rem;
+    animation: pop 0.2s ease;
+  }
+
+  /* Word display */
+  .word-stage {
+    text-align: center;
+    padding: 0.5rem 0 1.5rem;
+  }
+  .word-jp {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 64px;
+    line-height: 1.1;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .word-en {
+    font-size: 28px;
+    line-height: 1.3;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    padding: 0.5rem 1rem;
+  }
+  .word-reading {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 18px;
+    color: var(--text3);
+    margin-top: 8px;
+    letter-spacing: 0.08em;
+  }
+  .word-meta {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .word-meta .ch-tag {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(200,169,110,0.2);
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+  }
+  .word-meta .pos-tag {
+    color: var(--text3);
+  }
+
+  .reveal-zone {
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+    margin-top: 0.5rem;
+  }
+  .answer-big {
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--accent);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: all 0.25s ease;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .answer-big.jp { font-family: 'Shippori Mincho', serif; font-size: 44px; }
+  .answer-big.show { opacity: 1; transform: translateY(0); }
+  .answer-reading {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 16px;
+    color: var(--text3);
+    opacity: 0;
+    transition: all 0.25s ease 0.05s;
+  }
+  .answer-reading.show { opacity: 1; }
+  .hint-prompt { font-size: 13px; color: var(--text3); letter-spacing: 0.05em; }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 28px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .btn:hover { color: var(--text); background: var(--bg3); }
+  .btn.reveal-btn { padding: 11px 40px; color: var(--text); border-color: rgba(200,169,110,0.3); }
+  .btn.reveal-btn:hover { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .btn.correct-btn { color: var(--green); border-color: rgba(95,168,122,0.3); }
+  .btn.correct-btn:hover { background: var(--green-dim); border-color: var(--green); }
+  .btn.wrong-btn { color: var(--red); border-color: rgba(196,106,90,0.3); }
+  .btn.wrong-btn:hover { background: var(--red-dim); border-color: var(--red); }
+  .btn.next-btn { color: var(--blue); border-color: rgba(106,143,196,0.3); }
+  .btn.next-btn:hover { background: var(--blue-dim); border-color: var(--blue); }
+
+  /* Typing */
+  .type-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    text-align: center;
+    padding: 14px;
+    letter-spacing: 0.05em;
+    outline: none;
+    transition: border-color 0.15s;
+    margin: 1rem 0 0.5rem;
+  }
+  .type-input:focus { border-color: rgba(200,169,110,0.4); }
+  .type-input.correct { border-color: var(--green); background: var(--green-dim); }
+  .type-input.wrong { border-color: var(--red); background: var(--red-dim); }
+  .type-hint { font-size: 11px; color: var(--text3); text-align: center; margin-bottom: 4px; letter-spacing: 0.04em; }
+
+  .feedback-msg {
+    text-align: center;
+    font-size: 14px;
+    min-height: 22px;
+    letter-spacing: 0.04em;
+  }
+  .feedback-msg.correct { color: var(--green); }
+  .feedback-msg.wrong { color: var(--red); }
+
+  /* Reference */
+  .ref-ch-section { margin-bottom: 2rem; }
+  .ref-ch-title {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding-left: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ref-ch-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .vocab-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .vocab-table tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .vocab-table tr:hover { background: var(--bg3); }
+  .vocab-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .vt-jp { font-family: 'Shippori Mincho', serif; font-size: 18px; color: var(--text); width: 35%; }
+  .vt-read { font-family: 'Shippori Mincho', serif; font-size: 13px; color: var(--text3); width: 25%; }
+  .vt-en { color: var(--text2); width: 30%; }
+  .vt-pos { color: var(--text3); font-size: 11px; letter-spacing: 0.05em; width: 10%; text-align: right; }
+  .vt-seen { width: 8px; }
+  .dot-seen { display: inline-block; width: 6px; height: 6px; border-radius: 99px; background: var(--green); }
+  .dot-struggle { display: inline-block; width: 6px; height: 6px; border-radius: 99px; background: var(--red); }
+
+  /* Stats page */
+  .stats-page {}
+  .stats-heading {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 1rem;
+  }
+  .accuracy-bar-wrap { margin-bottom: 1.25rem; }
+  .accuracy-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 5px;
+    letter-spacing: 0.04em;
+  }
+  .accuracy-track {
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .accuracy-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.5s ease; }
+  .weak-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  .weak-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .weak-jp { font-family: 'Shippori Mincho', serif; font-size: 22px; }
+  .weak-en { font-size: 11px; color: var(--text3); margin-top: 2px; letter-spacing: 0.03em; }
+  .weak-score { font-size: 11px; margin-top: 4px; color: var(--red); }
+
+  .reset-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 8px 20px;
+    border: 1px solid rgba(196,106,90,0.25);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--red);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .reset-btn:hover { background: var(--red-dim); }
+
+  .empty-msg { text-align: center; padding: 3rem 0; color: var(--text3); font-size: 13px; letter-spacing: 0.05em; }
+
+  @keyframes pop {
+    0% { transform: scale(0.97); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="logo">Genki 1 <span>単語</span></div>
+    <div class="streak-badge" id="streak-badge">— day streak</div>
+  </header>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="switchTab('flashcard')">flashcards</button>
+    <button class="nav-btn" onclick="switchTab('typing')">typing</button>
+    <button class="nav-btn" onclick="switchTab('reference')">reference</button>
+    <button class="nav-btn" onclick="switchTab('stats')">stats</button>
+  </nav>
+
+  <div id="chapter-controls"></div>
+  <div id="main"></div>
+</div>
+
+<script>
+// ── Vocabulary Data ───────────────────────────────────────────
+// Format: [japanese, reading, english, pos]
+// pos: n=noun, v1=verb(ichidan), v2=verb(godan), vi=intransitive, adj=adjective, adv=adverb, exp=expression, conj=conjunction, part=particle, num=number, pron=pronoun, pref=prefix
+const VOCAB = {
+  1: [
+    ['これ','これ','this one','pron'],
+    ['それ','それ','that one','pron'],
+    ['あれ','あれ','that one (over there)','pron'],
+    ['どれ','どれ','which one','pron'],
+    ['この','この','this ... (adj)','adj'],
+    ['その','その','that ... (adj)','adj'],
+    ['あの','あの','that ... over there (adj)','adj'],
+    ['どの','どの','which ... (adj)','adj'],
+    ['ここ','ここ','here','n'],
+    ['そこ','そこ','there','n'],
+    ['あそこ','あそこ','over there','n'],
+    ['どこ','どこ','where','n'],
+    ['だれ','だれ','who','pron'],
+    ['なん/なに','なん/なに','what','pron'],
+    ['日本語','にほんご','Japanese language','n'],
+    ['英語','えいご','English language','n'],
+    ['大学','だいがく','university','n'],
+    ['学生','がくせい','student','n'],
+    ['先生','せんせい','teacher; professor','n'],
+    ['〜さん','〜さん','Mr./Ms. ...','suf'],
+    ['〜じん','〜じん','...person (nationality)','suf'],
+    ['〜語','〜ご','...language','suf'],
+    ['〜年生','〜ねんせい','...year student','suf'],
+    ['〜歳','〜さい','...years old','suf'],
+    ['はい','はい','yes','exp'],
+    ['いいえ','いいえ','no','exp'],
+    ['あのう','あのう','um...','exp'],
+    ['そうですか','そうですか','is that so?','exp'],
+    ['〜も','〜も','...too; also','part'],
+    ['〜の','〜の','\'s (possessive)','part'],
+  ],
+  2: [
+    ['朝ごはん','あさごはん','breakfast','n'],
+    ['昼ごはん','ひるごはん','lunch','n'],
+    ['晩ごはん','ばんごはん','dinner','n'],
+    ['パン','パン','bread','n'],
+    ['コーヒー','コーヒー','coffee','n'],
+    ['水','みず','water','n'],
+    ['お茶','おちゃ','tea (green tea)','n'],
+    ['お酒','おさけ','sake; alcohol','n'],
+    ['ビール','ビール','beer','n'],
+    ['たまご','たまご','egg','n'],
+    ['にく','にく','meat','n'],
+    ['さかな','さかな','fish','n'],
+    ['やさい','やさい','vegetable','n'],
+    ['テレビ','テレビ','TV','n'],
+    ['ラジオ','ラジオ','radio','n'],
+    ['電話','でんわ','telephone','n'],
+    ['新聞','しんぶん','newspaper','n'],
+    ['雑誌','ざっし','magazine','n'],
+    ['本','ほん','book','n'],
+    ['カメラ','カメラ','camera','n'],
+    ['車','くるま','car','n'],
+    ['財布','さいふ','wallet','n'],
+    ['かばん','かばん','bag','n'],
+    ['時計','とけい','watch; clock','n'],
+    ['傘','かさ','umbrella','n'],
+    ['くつ','くつ','shoes','n'],
+    ['ネクタイ','ネクタイ','necktie','n'],
+    ['服','ふく','clothes','n'],
+    ['帽子','ぼうし','hat; cap','n'],
+    ['コンビニ','コンビニ','convenience store','n'],
+    ['スーパー','スーパー','supermarket','n'],
+    ['デパート','デパート','department store','n'],
+    ['レストラン','レストラン','restaurant','n'],
+    ['何時','なんじ','what time','n'],
+    ['今','いま','now','n'],
+    ['〜時','〜じ','...o\'clock','suf'],
+    ['〜分','〜ふん','...minutes','suf'],
+    ['午前','ごぜん','AM','n'],
+    ['午後','ごご','PM','n'],
+    ['いくら','いくら','how much','pron'],
+    ['ください','ください','please give me','exp'],
+    ['じゃあ','じゃあ','then; well','conj'],
+  ],
+  3: [
+    ['テニス','テニス','tennis','n'],
+    ['サッカー','サッカー','soccer','n'],
+    ['映画','えいが','movie','n'],
+    ['音楽','おんがく','music','n'],
+    ['スポーツ','スポーツ','sports','n'],
+    ['ゲーム','ゲーム','game','n'],
+    ['読む','よむ','to read','v2'],
+    ['見る','みる','to see; to watch','v1'],
+    ['聞く','きく','to listen; to hear','v2'],
+    ['食べる','たべる','to eat','v1'],
+    ['飲む','のむ','to drink','v2'],
+    ['する','する','to do','v-irr'],
+    ['くる','くる','to come','v-irr'],
+    ['行く','いく','to go','v2'],
+    ['起きる','おきる','to get up','v1'],
+    ['寝る','ねる','to go to sleep','v1'],
+    ['帰る','かえる','to go back; to return','v2'],
+    ['朝','あさ','morning','n'],
+    ['昼','ひる','noon; daytime','n'],
+    ['夜','よる','night','n'],
+    ['今日','きょう','today','n'],
+    ['明日','あした','tomorrow','n'],
+    ['昨日','きのう','yesterday','n'],
+    ['今朝','けさ','this morning','n'],
+    ['今夜','こんや','tonight','n'],
+    ['毎日','まいにち','every day','n'],
+    ['毎朝','まいあさ','every morning','n'],
+    ['毎晩','まいばん','every evening','n'],
+    ['週末','しゅうまつ','weekend','n'],
+    ['いつも','いつも','always','adv'],
+    ['たいてい','たいてい','usually','adv'],
+    ['ときどき','ときどき','sometimes','adv'],
+    ['あまり','あまり','not very (+ neg)','adv'],
+    ['ぜんぜん','ぜんぜん','not at all (+ neg)','adv'],
+    ['そして','そして','and then','conj'],
+    ['でも','でも','but','conj'],
+    ['〜から','〜から','from ...','part'],
+    ['〜まで','〜まで','until ... / as far as ...','part'],
+    ['ぐらい','ぐらい','about (approx.)','part'],
+  ],
+  4: [
+    ['デート','デート','date (romantic)','n'],
+    ['バイト','バイト','part-time job','n'],
+    ['買い物','かいもの','shopping','n'],
+    ['授業','じゅぎょう','class','n'],
+    ['試験','しけん','exam','n'],
+    ['宿題','しゅくだい','homework','n'],
+    ['旅行','りょこう','travel; trip','n'],
+    ['スキー','スキー','skiing','n'],
+    ['電車','でんしゃ','train','n'],
+    ['飛行機','ひこうき','airplane','n'],
+    ['バス','バス','bus','n'],
+    ['タクシー','タクシー','taxi','n'],
+    ['地下鉄','ちかてつ','subway','n'],
+    ['駅','えき','station','n'],
+    ['バスてい','バスてい','bus stop','n'],
+    ['空港','くうこう','airport','n'],
+    ['海','うみ','sea; beach','n'],
+    ['山','やま','mountain','n'],
+    ['川','かわ','river','n'],
+    ['公園','こうえん','park','n'],
+    ['〜で','〜で','by (means of transport)','part'],
+    ['一人で','ひとりで','alone; by oneself','exp'],
+    ['はじめて','はじめて','for the first time','adv'],
+    ['いっしょに','いっしょに','together','adv'],
+    ['に','に','to (direction)','part'],
+    ['を','を','object marker','part'],
+    ['へ','へ','to (direction)','part'],
+    ['会う','あう','to meet','v2'],
+    ['ある','ある','to exist (inanimate)','v2'],
+    ['買う','かう','to buy','v2'],
+    ['書く','かく','to write','v2'],
+    ['撮る','とる','to take (photos)','v2'],
+    ['待つ','まつ','to wait','v2'],
+    ['わかる','わかる','to understand','v2'],
+    ['います','います','to exist (animate)','v1'],
+  ],
+  5: [
+    ['お金','おかね','money','n'],
+    ['切符','きっぷ','ticket','n'],
+    ['ふとん','ふとん','futon','n'],
+    ['まど','まど','window','n'],
+    ['ドア','ドア','door','n'],
+    ['電気','でんき','electricity; light','n'],
+    ['いす','いす','chair','n'],
+    ['机','つくえ','desk','n'],
+    ['えんぴつ','えんぴつ','pencil','n'],
+    ['ノート','ノート','notebook','n'],
+    ['ペン','ペン','pen','n'],
+    ['紙','かみ','paper','n'],
+    ['ゴミ箱','ゴミばこ','garbage can','n'],
+    ['はこ','はこ','box','n'],
+    ['引き出し','ひきだし','drawer','n'],
+    ['ポスター','ポスター','poster','n'],
+    ['写真','しゃしん','photo','n'],
+    ['花','はな','flower','n'],
+    ['猫','ねこ','cat','n'],
+    ['犬','いぬ','dog','n'],
+    ['動物','どうぶつ','animal','n'],
+    ['魚','さかな','fish','n'],
+    ['鳥','とり','bird','n'],
+    ['家','いえ','house; home','n'],
+    ['部屋','へや','room','n'],
+    ['上','うえ','above; top','n'],
+    ['下','した','below; under','n'],
+    ['右','みぎ','right','n'],
+    ['左','ひだり','left','n'],
+    ['中','なか','inside; middle','n'],
+    ['前','まえ','in front of','n'],
+    ['後ろ','うしろ','behind','n'],
+    ['そば','そば','near; beside','n'],
+    ['どこか','どこか','somewhere','pron'],
+    ['おく','おく','to put; to place','v2'],
+    ['いる','いる','to exist (animate)','v1'],
+  ],
+  6: [
+    ['うち','うち','home; our place','n'],
+    ['兄','あに','older brother (own)','n'],
+    ['姉','あね','older sister (own)','n'],
+    ['弟','おとうと','younger brother','n'],
+    ['妹','いもうと','younger sister','n'],
+    ['お兄さん','おにいさん','older brother (other\'s)','n'],
+    ['お姉さん','おねえさん','older sister (other\'s)','n'],
+    ['お父さん','おとうさん','father (other\'s)','n'],
+    ['お母さん','おかあさん','mother (other\'s)','n'],
+    ['父','ちち','father (own)','n'],
+    ['母','はは','mother (own)','n'],
+    ['親','おや','parent','n'],
+    ['両親','りょうしん','parents','n'],
+    ['子供','こども','child','n'],
+    ['家族','かぞく','family','n'],
+    ['人','ひと','person','n'],
+    ['女の人','おんなのひと','woman','n'],
+    ['男の人','おとこのひと','man','n'],
+    ['子','こ','child; kid','n'],
+    ['友だち','ともだち','friend','n'],
+    ['彼女','かのじょ','she; girlfriend','n'],
+    ['彼','かれ','he; boyfriend','n'],
+    ['かっこいい','かっこいい','cool; good-looking','adj'],
+    ['かわいい','かわいい','cute','adj'],
+    ['きれい(な)','きれい(な)','pretty; clean','adj-na'],
+    ['すてき(な)','すてき(な)','lovely; wonderful','adj-na'],
+    ['やさしい','やさしい','kind; gentle','adj'],
+    ['おもしろい','おもしろい','interesting; funny','adj'],
+    ['明るい','あかるい','bright; cheerful','adj'],
+    ['運動する','うんどうする','to exercise','v-suru'],
+    ['料理する','りょうりする','to cook','v-suru'],
+    ['住む','すむ','to live (in)','v2'],
+    ['知っている','しっている','to know','v2'],
+    ['どんな','どんな','what kind of','adj'],
+    ['どうして','どうして','why','adv'],
+  ],
+  7: [
+    ['プレゼント','プレゼント','present; gift','n'],
+    ['もの','もの','thing (tangible)','n'],
+    ['こと','こと','thing (intangible)','n'],
+    ['くに','くに','country','n'],
+    ['年','とし','year; age','n'],
+    ['私','わたし','I','pron'],
+    ['君','きみ','you (informal)','pron'],
+    ['あげる','あげる','to give (to others)','v1'],
+    ['もらう','もらう','to receive','v2'],
+    ['くれる','くれる','to give (to me)','v1'],
+    ['教える','おしえる','to teach; to tell','v1'],
+    ['借りる','かりる','to borrow','v1'],
+    ['貸す','かす','to lend','v2'],
+    ['作る','つくる','to make','v2'],
+    ['送る','おくる','to send','v2'],
+    ['手紙','てがみ','letter (mail)','n'],
+    ['メール','メール','email','n'],
+    ['パーティー','パーティー','party','n'],
+    ['誕生日','たんじょうび','birthday','n'],
+    ['クリスマス','クリスマス','Christmas','n'],
+    ['もう','もう','already; anymore','adv'],
+    ['まだ','まだ','still; not yet','adv'],
+    ['よかったら','よかったら','if you like','exp'],
+    ['ちょっと','ちょっと','a little; a moment','adv'],
+    ['ぜひ','ぜひ','by all means','adv'],
+    ['たくさん','たくさん','many; a lot','adv'],
+    ['だいじょうぶ(な)','だいじょうぶ(な)','OK; all right','adj-na'],
+    ['大好き(な)','だいすき(な)','to love; favourite','adj-na'],
+    ['いい/よい','いい/よい','good','adj'],
+    ['わるい','わるい','bad','adj'],
+  ],
+  8: [
+    ['病院','びょういん','hospital','n'],
+    ['薬','くすり','medicine','n'],
+    ['熱','ねつ','fever','n'],
+    ['かぜ','かぜ','cold (illness)','n'],
+    ['頭','あたま','head','n'],
+    ['お腹','おなか','stomach','n'],
+    ['のど','のど','throat','n'],
+    ['歯','は','tooth','n'],
+    ['目','め','eye','n'],
+    ['耳','みみ','ear','n'],
+    ['足','あし','foot; leg','n'],
+    ['背','せ','back; height','n'],
+    ['体','からだ','body','n'],
+    ['手','て','hand','n'],
+    ['ひどい','ひどい','terrible; awful','adj'],
+    ['大変(な)','たいへん(な)','tough; hard; awful','adj-na'],
+    ['心配(な)','しんぱい(な)','worry; concern','adj-na'],
+    ['痛い','いたい','painful; hurt','adj'],
+    ['眠い','ねむい','sleepy','adj'],
+    ['おなかがすく','おなかがすく','to get hungry','exp'],
+    ['のどがかわく','のどがかわく','to get thirsty','exp'],
+    ['つかれる','つかれる','to get tired','v1'],
+    ['やすむ','やすむ','to take a break; to rest','v2'],
+    ['飲む','のむ','to drink; to take (medicine)','v2'],
+    ['大丈夫','だいじょうぶ','all right; okay','exp'],
+    ['たいせつ(な)','たいせつ(な)','important; precious','adj-na'],
+    ['早く','はやく','early; quickly','adv'],
+    ['もっと','もっと','more','adv'],
+    ['少し','すこし','a little; a few','adv'],
+    ['よく','よく','often; well','adv'],
+  ],
+  9: [
+    ['ホテル','ホテル','hotel','n'],
+    ['旅館','りょかん','Japanese inn','n'],
+    ['空き','あき','vacancy; free','n'],
+    ['泊まる','とまる','to stay (at)','v2'],
+    ['着く','つく','to arrive','v2'],
+    ['出る','でる','to leave; to exit','v1'],
+    ['乗る','のる','to ride; to get on','v2'],
+    ['降りる','おりる','to get off','v1'],
+    ['乗り換える','のりかえる','to transfer (train)','v1'],
+    ['歩く','あるく','to walk','v2'],
+    ['走る','はしる','to run','v2'],
+    ['曲がる','まがる','to turn','v2'],
+    ['渡る','わたる','to cross','v2'],
+    ['止まる','とまる','to stop','v2'],
+    ['道','みち','road; way','n'],
+    ['橋','はし','bridge','n'],
+    ['角','かど','corner','n'],
+    ['信号','しんごう','traffic light','n'],
+    ['地図','ちず','map','n'],
+    ['〜番','〜ばん','number ...','suf'],
+    ['〜番線','〜ばんせん','track number ...','suf'],
+    ['右に','みぎに','to the right','exp'],
+    ['左に','ひだりに','to the left','exp'],
+    ['まっすぐ','まっすぐ','straight','adv'],
+    ['すぐ','すぐ','immediately; soon','adv'],
+    ['むこう','むこう','over there; across','n'],
+    ['もうすぐ','もうすぐ','soon; shortly','adv'],
+  ],
+  10: [
+    ['アルバイト','アルバイト','part-time job','n'],
+    ['お客さん','おきゃくさん','customer; guest','n'],
+    ['研究','けんきゅう','research','n'],
+    ['授業料','じゅぎょうりょう','tuition','n'],
+    ['奨学金','しょうがくきん','scholarship','n'],
+    ['辞書','じしょ','dictionary','n'],
+    ['文法','ぶんぽう','grammar','n'],
+    ['作文','さくぶん','composition; essay','n'],
+    ['ひらがな','ひらがな','hiragana','n'],
+    ['カタカナ','カタカナ','katakana','n'],
+    ['漢字','かんじ','kanji','n'],
+    ['コピーする','コピーする','to copy; to photocopy','v-suru'],
+    ['説明する','せつめいする','to explain','v-suru'],
+    ['質問する','しつもんする','to ask a question','v-suru'],
+    ['練習する','れんしゅうする','to practice','v-suru'],
+    ['翻訳する','ほんやくする','to translate','v-suru'],
+    ['使う','つかう','to use','v2'],
+    ['手伝う','てつだう','to help; to assist','v2'],
+    ['休む','やすむ','to be absent; to rest','v2'],
+    ['終わる','おわる','to finish','v2'],
+    ['始まる','はじまる','to begin (vi)','v2'],
+    ['始める','はじめる','to begin (vt)','v1'],
+    ['〜やすい','〜やすい','easy to ...','suf'],
+    ['〜にくい','〜にくい','hard to ...','suf'],
+    ['とても','とても','very','adv'],
+    ['ほんとうに','ほんとうに','really','adv'],
+  ],
+  11: [
+    ['ショッピング','ショッピング','shopping','n'],
+    ['カード','カード','card','n'],
+    ['サイズ','サイズ','size','n'],
+    ['店','みせ','store; shop','n'],
+    ['店員','てんいん','store clerk','n'],
+    ['客','きゃく','customer; guest','n'],
+    ['大きい','おおきい','big','adj'],
+    ['小さい','ちいさい','small','adj'],
+    ['高い','たかい','expensive; tall','adj'],
+    ['安い','やすい','cheap','adj'],
+    ['長い','ながい','long','adj'],
+    ['短い','みじかい','short','adj'],
+    ['新しい','あたらしい','new','adj'],
+    ['古い','ふるい','old (not person)','adj'],
+    ['難しい','むずかしい','difficult','adj'],
+    ['やさしい','やさしい','easy; kind','adj'],
+    ['おいしい','おいしい','delicious','adj'],
+    ['まずい','まずい','awful (taste)','adj'],
+    ['暑い','あつい','hot (weather)','adj'],
+    ['寒い','さむい','cold (weather)','adj'],
+    ['暖かい','あたたかい','warm','adj'],
+    ['涼しい','すずしい','cool (weather)','adj'],
+    ['広い','ひろい','spacious; wide','adj'],
+    ['狭い','せまい','narrow; small','adj'],
+    ['忙しい','いそがしい','busy','adj'],
+    ['楽しい','たのしい','fun; enjoyable','adj'],
+    ['かわいい','かわいい','cute','adj'],
+    ['かっこいい','かっこいい','cool; stylish','adj'],
+    ['似合う','にあう','to suit; to look good on','v2'],
+    ['試着する','しちゃくする','to try on (clothes)','v-suru'],
+    ['〜すぎる','〜すぎる','too ... (excessive)','suf'],
+    ['もっと','もっと','more','adv'],
+  ],
+  12: [
+    ['祭り','まつり','festival','n'],
+    ['花火','はなび','fireworks','n'],
+    ['お正月','おしょうがつ','New Year','n'],
+    ['クリスマス','クリスマス','Christmas','n'],
+    ['バレンタイン','バレンタイン','Valentine\'s Day','n'],
+    ['お盆','おぼん','Obon festival','n'],
+    ['季節','きせつ','season','n'],
+    ['春','はる','spring','n'],
+    ['夏','なつ','summer','n'],
+    ['秋','あき','autumn; fall','n'],
+    ['冬','ふゆ','winter','n'],
+    ['天気','てんき','weather','n'],
+    ['雨','あめ','rain','n'],
+    ['雪','ゆき','snow','n'],
+    ['風','かぜ','wind','n'],
+    ['空','そら','sky','n'],
+    ['雲','くも','cloud','n'],
+    ['太陽','たいよう','sun','n'],
+    ['月','つき','moon; month','n'],
+    ['星','ほし','star','n'],
+    ['降る','ふる','to fall (rain/snow)','v2'],
+    ['晴れる','はれる','to become sunny','v1'],
+    ['曇る','くもる','to become cloudy','v2'],
+    ['楽しむ','たのしむ','to enjoy','v2'],
+    ['祝う','いわう','to celebrate','v2'],
+    ['集まる','あつまる','to gather','v2'],
+    ['有名(な)','ゆうめい(な)','famous','adj-na'],
+    ['特別(な)','とくべつ(な)','special','adj-na'],
+    ['にぎやか(な)','にぎやか(な)','lively; bustling','adj-na'],
+    ['静か(な)','しずか(な)','quiet','adj-na'],
+  ],
+};
+
+const ALL_CHAPTERS = Object.keys(VOCAB).map(Number);
+
+// ── Persistence ───────────────────────────────────────────────
+function loadData() {
+  try { return JSON.parse(localStorage.getItem('genki1_data') || '{}'); } catch(e) { return {}; }
+}
+function saveData(d) { localStorage.setItem('genki1_data', JSON.stringify(d)); }
+function getProgress() { return loadData().progress || {}; }
+
+function recordResult(key, correct) {
+  const d = loadData();
+  if (!d.progress) d.progress = {};
+  if (!d.progress[key]) d.progress[key] = { correct: 0, wrong: 0, streak: 0 };
+  const p = d.progress[key];
+  if (correct) { p.correct++; p.streak = (p.streak||0)+1; }
+  else { p.wrong++; p.streak = 0; }
+  p.lastSeen = Date.now();
+  if (!d.history) d.history = [];
+  d.history.push({ key, correct, ts: Date.now() });
+  if (d.history.length > 1000) d.history = d.history.slice(-1000);
+  updateStreak(d);
+  saveData(d);
+}
+
+function updateStreak(d) {
+  const today = new Date().toDateString();
+  if (!d.lastActiveDay || d.lastActiveDay !== today) {
+    const last = d.lastActiveDay ? new Date(d.lastActiveDay) : null;
+    const diff = last ? Math.round((new Date(today) - last) / 86400000) : 0;
+    d.currentStreak = diff === 1 ? (d.currentStreak||1)+1 : 1;
+    d.lastActiveDay = today;
+  }
+}
+
+function getStreak() { return loadData().currentStreak || 0; }
+function resetProgress() { const d = loadData(); d.progress = {}; d.history = []; d.currentStreak = 0; saveData(d); }
+
+// ── State ─────────────────────────────────────────────────────
+let activeChapters = new Set(ALL_CHAPTERS);
+let currentTab = 'flashcard';
+let direction = 'jp-en'; // 'jp-en' | 'en-jp' | 'both'
+
+let flashState = { deck: [], idx: 0, revealed: false, sessionCorrect: 0, sessionWrong: 0 };
+let typeState  = { deck: [], idx: 0, answered: false, sessionCorrect: 0, sessionWrong: 0 };
+
+function getActiveVocab() {
+  let out = [];
+  for (const ch of activeChapters) {
+    if (VOCAB[ch]) out = out.concat(VOCAB[ch].map(v => ({ ch, jp: v[0], read: v[1], en: v[2], pos: v[3] })));
+  }
+  return out;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function makeDeckEntry(vocab) {
+  // direction
+  const dirs = direction === 'both' ? ['jp-en','en-jp'] : [direction];
+  const d = dirs[Math.floor(Math.random()*dirs.length)];
+  return { ...vocab, dir: d, key: vocab.jp + '|' + d };
+}
+
+function weightedDeck(vocab) {
+  const prog = getProgress();
+  const weighted = [];
+  for (const v of vocab) {
+    const dirs = direction === 'both' ? ['jp-en','en-jp'] : [direction];
+    for (const d of dirs) {
+      const key = v.jp + '|' + d;
+      const p = prog[key];
+      if (!p) { weighted.push({...v, dir:d, key}); weighted.push({...v, dir:d, key}); continue; }
+      const acc = p.correct / (p.correct + p.wrong);
+      const reps = acc < 0.4 ? 3 : acc < 0.7 ? 2 : 1;
+      for (let i = 0; i < reps; i++) weighted.push({...v, dir:d, key});
+    }
+  }
+  return shuffle(weighted);
+}
+
+function resetDecks() {
+  const vocab = getActiveVocab();
+  flashState = { deck: weightedDeck(vocab), idx: 0, revealed: false, sessionCorrect: 0, sessionWrong: 0 };
+  typeState  = { deck: weightedDeck(vocab), idx: 0, answered: false, sessionCorrect: 0, sessionWrong: 0 };
+}
+
+// ── Render ────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['flashcard','typing','reference','stats'][i] === tab);
+  });
+  render();
+}
+
+function render() {
+  document.getElementById('streak-badge').textContent = `${getStreak()} day streak`;
+  buildChapterControls();
+  const el = document.getElementById('main');
+  if (currentTab === 'flashcard')  el.innerHTML = renderFlashcard();
+  else if (currentTab === 'typing')    el.innerHTML = renderTyping();
+  else if (currentTab === 'reference') el.innerHTML = renderReference();
+  else                                 el.innerHTML = renderStats();
+
+  if (currentTab === 'typing') {
+    const inp = document.getElementById('type-inp');
+    if (inp) {
+      inp.focus();
+      inp.oninput = typeCheck;
+      inp.onkeydown = e => { if (e.key === 'Enter' && typeState.answered) typeNext(); };
+    }
+  }
+}
+
+function buildChapterControls() {
+  const wrap = document.getElementById('chapter-controls');
+  // Direction toggle
+  let dirHtml = `<div class="dir-row">
+    <button class="dir-btn ${direction==='jp-en'?'active':''}" onclick="setDir('jp-en')">JP → EN</button>
+    <button class="dir-btn ${direction==='en-jp'?'active':''}" onclick="setDir('en-jp')">EN → JP</button>
+    <button class="dir-btn ${direction==='both'?'active':''}" onclick="setDir('both')">both</button>
+  </div>`;
+  // Chapter pills
+  let pillsHtml = `<div class="chapter-row"><span class="chapter-label">chapters</span><div class="chapter-pills">`;
+  const allOn = activeChapters.size === ALL_CHAPTERS.length;
+  pillsHtml += `<button class="ch-pill on all-btn ${allOn?'':'dim-all'}" onclick="toggleAllChapters()">all</button>`;
+  for (const ch of ALL_CHAPTERS) {
+    pillsHtml += `<button class="ch-pill ${activeChapters.has(ch)?'on':''}" onclick="toggleChapter(${ch})">${ch}</button>`;
+  }
+  pillsHtml += `</div></div>`;
+  wrap.innerHTML = dirHtml + pillsHtml;
+}
+
+function setDir(d) { direction = d; resetDecks(); render(); }
+function toggleChapter(ch) {
+  if (activeChapters.has(ch)) { if (activeChapters.size > 1) activeChapters.delete(ch); }
+  else activeChapters.add(ch);
+  resetDecks(); render();
+}
+function toggleAllChapters() {
+  if (activeChapters.size === ALL_CHAPTERS.length) activeChapters = new Set([ALL_CHAPTERS[0]]);
+  else activeChapters = new Set(ALL_CHAPTERS);
+  resetDecks(); render();
+}
+
+function getStats() {
+  const vocab = getActiveVocab();
+  const prog = getProgress();
+  const total = vocab.length;
+  const seen = vocab.filter(v => prog[v.jp+'|jp-en'] || prog[v.jp+'|en-jp']).length;
+  const pct = total ? Math.round((seen/total)*100) : 0;
+  return { total, seen, pct };
+}
+
+// FLASHCARD
+function renderFlashcard() {
+  const vocab = getActiveVocab();
+  if (!vocab.length) return '<div class="empty-msg">no chapters selected</div>';
+  if (!flashState.deck.length) flashState.deck = weightedDeck(vocab);
+  const st = flashState;
+  const { total, seen, pct } = getStats();
+  const cur = st.deck[st.idx % st.deck.length];
+  const isJpEn = cur.dir === 'jp-en';
+  const promptContent = isJpEn
+    ? `<div class="word-jp">${cur.jp}</div>${cur.read !== cur.jp ? `<div class="word-reading">${cur.read}</div>` : ''}`
+    : `<div class="word-en">${cur.en}</div>`;
+  const answerContent = isJpEn
+    ? `<div class="answer-big ${st.revealed?'show':''}">${cur.en}</div>`
+    : `<div class="answer-big jp ${st.revealed?'show':''}">${cur.jp}</div>${cur.read !== cur.jp ? `<div class="answer-reading ${st.revealed?'show':''}">${cur.read}</div>` : ''}`;
+  return `
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${pct}%</div><div class="stat-lbl">seen</div></div>
+      <div class="stat-box"><div class="stat-num">${seen}/${total}</div><div class="stat-lbl">words</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--green)">${st.sessionCorrect}</div><div class="stat-lbl">correct</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--red)">${st.sessionWrong}</div><div class="stat-lbl">wrong</div></div>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
+    <div class="card">
+      <div class="word-stage">
+        ${promptContent}
+        <div class="word-meta">
+          <span class="ch-tag">ch.${cur.ch}</span>
+          <span class="pos-tag">${cur.pos}</span>
+        </div>
+      </div>
+      <div class="reveal-zone">
+        ${answerContent}
+        ${!st.revealed ? '<div class="hint-prompt">what does this mean?</div>' : ''}
+      </div>
+      <div class="btn-row">
+        ${!st.revealed
+          ? `<button class="btn reveal-btn" onclick="flashReveal()">reveal</button>`
+          : `<button class="btn correct-btn" onclick="flashMark(true)">correct ✓</button>
+             <button class="btn wrong-btn" onclick="flashMark(false)">wrong ✗</button>`}
+      </div>
+    </div>`;
+}
+
+function flashReveal() { flashState.revealed = true; render(); }
+function flashMark(ok) {
+  const st = flashState;
+  const cur = st.deck[st.idx % st.deck.length];
+  if (ok) st.sessionCorrect++; else st.sessionWrong++;
+  recordResult(cur.key, ok);
+  st.idx++;
+  st.revealed = false;
+  if (st.idx >= st.deck.length) st.deck = weightedDeck(getActiveVocab());
+  render();
+}
+
+// TYPING
+function renderTyping() {
+  const vocab = getActiveVocab();
+  if (!vocab.length) return '<div class="empty-msg">no chapters selected</div>';
+  if (!typeState.deck.length) typeState.deck = weightedDeck(vocab);
+  const st = typeState;
+  const { total, seen, pct } = getStats();
+  const cur = st.deck[st.idx % st.deck.length];
+  const isJpEn = cur.dir === 'jp-en';
+  const promptContent = isJpEn
+    ? `<div class="word-jp">${cur.jp}</div>${cur.read !== cur.jp ? `<div class="word-reading">${cur.read}</div>` : ''}`
+    : `<div class="word-en">${cur.en}</div>`;
+  const hint = isJpEn ? 'type the English meaning' : 'type the Japanese (romaji or kana)';
+  return `
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${pct}%</div><div class="stat-lbl">seen</div></div>
+      <div class="stat-box"><div class="stat-num">${seen}/${total}</div><div class="stat-lbl">words</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--green)">${st.sessionCorrect}</div><div class="stat-lbl">correct</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--red)">${st.sessionWrong}</div><div class="stat-lbl">wrong</div></div>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
+    <div class="card">
+      <div class="word-stage">
+        ${promptContent}
+        <div class="word-meta">
+          <span class="ch-tag">ch.${cur.ch}</span>
+          <span class="pos-tag">${cur.pos}</span>
+        </div>
+      </div>
+      <div class="type-hint">${hint}</div>
+      <input class="type-input" id="type-inp" type="text" placeholder="answer..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" ${st.answered?'disabled':''} />
+      <div class="feedback-msg" id="type-fb"></div>
+      <div class="btn-row">
+        ${st.answered
+          ? `<button class="btn next-btn" onclick="typeNext()">next →</button>`
+          : `<button class="btn wrong-btn" onclick="typeSkip()">skip ✗</button>`}
+      </div>
+    </div>`;
+}
+
+function normalize(s) {
+  return s.toLowerCase().trim()
+    .replace(/[()（）]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function typeCheck() {
+  const st = typeState;
+  if (st.answered) return;
+  const inp = document.getElementById('type-inp');
+  const fb = document.getElementById('type-fb');
+  if (!inp || !fb) return;
+  const val = normalize(inp.value);
+  if (!val) { fb.textContent = ''; fb.className = 'feedback-msg'; return; }
+  const cur = st.deck[st.idx % st.deck.length];
+  const isJpEn = cur.dir === 'jp-en';
+
+  let correct, answers;
+  if (isJpEn) {
+    // Accept any part of slash-separated meanings, strip parentheticals
+    answers = cur.en.split(/[;\/]/).map(normalize);
+    correct = answers.some(a => val === a || a.startsWith(val) === false && val === a);
+    // simpler: exact match any answer segment
+    correct = answers.some(a => val === a);
+    // also accept if val is contained in one of the answers (for long meanings)
+    if (!correct) correct = answers.some(a => a === val);
+  } else {
+    // Accept romaji reading
+    answers = [normalize(cur.read), normalize(cur.jp)];
+    correct = answers.some(a => val === a);
+    // also accept reading without long vowel markers
+    if (!correct) correct = normalize(cur.read) === val;
+  }
+
+  const maxLen = isJpEn ? Math.max(...answers.map(a=>a.length)) + 2 : normalize(cur.read).length + 2;
+
+  if (correct) {
+    inp.classList.add('correct');
+    fb.textContent = 'correct!';
+    fb.className = 'feedback-msg correct';
+    st.sessionCorrect++;
+    st.answered = true;
+    recordResult(cur.key, true);
+    inp.disabled = true;
+    const row = document.createElement('div');
+    row.className = 'btn-row';
+    row.innerHTML = '<button class="btn next-btn" onclick="typeNext()">next →</button>';
+    inp.parentNode.appendChild(row);
+    setTimeout(() => typeNext(), 700);
+  } else if (val.length >= maxLen) {
+    inp.classList.add('wrong');
+    const correctAns = isJpEn ? cur.en : cur.read;
+    fb.textContent = `→ ${correctAns}`;
+    fb.className = 'feedback-msg wrong';
+    st.sessionWrong++;
+    st.answered = true;
+    recordResult(cur.key, false);
+    inp.disabled = true;
+    const row = document.createElement('div');
+    row.className = 'btn-row';
+    row.innerHTML = '<button class="btn next-btn" onclick="typeNext()">next →</button>';
+    inp.parentNode.appendChild(row);
+  }
+}
+
+function typeNext() {
+  const st = typeState;
+  st.idx++;
+  st.answered = false;
+  if (st.idx >= st.deck.length) st.deck = weightedDeck(getActiveVocab());
+  render();
+  setTimeout(() => { const inp = document.getElementById('type-inp'); if (inp) inp.focus(); }, 50);
+}
+
+function typeSkip() {
+  const st = typeState;
+  if (st.answered) return;
+  const cur = st.deck[st.idx % st.deck.length];
+  const isJpEn = cur.dir === 'jp-en';
+  const correctAns = isJpEn ? cur.en : cur.read;
+  st.sessionWrong++;
+  st.answered = true;
+  recordResult(cur.key, false);
+  const inp = document.getElementById('type-inp');
+  const fb = document.getElementById('type-fb');
+  if (inp) { inp.classList.add('wrong'); inp.disabled = true; }
+  if (fb) { fb.textContent = `\u2192 ${correctAns}`; fb.className = 'feedback-msg wrong'; }
+  const existing = document.querySelector('.btn-row');
+  if (existing) existing.innerHTML = '<button class="btn next-btn" onclick="typeNext()">next \u2192</button>';
+}
+
+// REFERENCE
+function renderReference() {
+  const prog = getProgress();
+  let html = '';
+  for (const ch of [...activeChapters].sort((a,b)=>a-b)) {
+    html += `<div class="ref-ch-section"><div class="ref-ch-title">chapter ${ch}</div>
+      <table class="vocab-table">`;
+    for (const [jp, read, en, pos] of VOCAB[ch]) {
+      const pJE = prog[jp+'|jp-en'];
+      const pEJ = prog[jp+'|en-jp'];
+      const hasSeen = pJE || pEJ;
+      let dot = '';
+      if (hasSeen) {
+        const tc = (pJE?.correct||0)+(pEJ?.correct||0);
+        const tw = (pJE?.wrong||0)+(pEJ?.wrong||0);
+        const acc = tc/(tc+tw);
+        dot = acc >= 0.6 ? '<span class="dot-seen"></span>' : '<span class="dot-struggle"></span>';
+      }
+      html += `<tr>
+        <td class="vt-seen">${dot}</td>
+        <td class="vt-jp">${jp}</td>
+        <td class="vt-read">${read !== jp ? read : ''}</td>
+        <td class="vt-en">${en}</td>
+        <td class="vt-pos">${pos}</td>
+      </tr>`;
+    }
+    html += '</table></div>';
+  }
+  return html || '<div class="empty-msg">no chapters selected</div>';
+}
+
+// STATS
+function renderStats() {
+  const prog = getProgress();
+  const allVocab = Object.values(VOCAB).flat().map(v=>v[0]);
+  const totalSeen = new Set(Object.keys(prog).map(k=>k.split('|')[0])).size;
+  const totalCorrect = Object.values(prog).reduce((s,p)=>s+p.correct,0);
+  const totalWrong   = Object.values(prog).reduce((s,p)=>s+p.wrong,0);
+  const totalAns = totalCorrect+totalWrong;
+  const overallAcc = totalAns ? Math.round((totalCorrect/totalAns)*100) : 0;
+
+  const weak = [];
+  const seenJp = new Set();
+  for (const [key, p] of Object.entries(prog)) {
+    const [jp] = key.split('|');
+    if (seenJp.has(jp)) continue;
+    if ((p.correct+p.wrong) < 2) continue;
+    // find vocab entry
+    let entry = null;
+    for (const ch of ALL_CHAPTERS) {
+      const found = VOCAB[ch].find(v=>v[0]===jp);
+      if (found) { entry = found; break; }
+    }
+    if (!entry) continue;
+    const tc = (prog[jp+'|jp-en']?.correct||0)+(prog[jp+'|en-jp']?.correct||0);
+    const tw = (prog[jp+'|jp-en']?.wrong||0)+(prog[jp+'|en-jp']?.wrong||0);
+    if (tc+tw < 2) continue;
+    seenJp.add(jp);
+    weak.push({ jp: entry[0], read: entry[1], en: entry[2], acc: tc/(tc+tw) });
+  }
+  weak.sort((a,b)=>a.acc-b.acc);
+  const weakTop = weak.slice(0,12);
+
+  let html = `
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${getStreak()}</div><div class="stat-lbl">day streak</div></div>
+      <div class="stat-box"><div class="stat-num">${totalSeen}</div><div class="stat-lbl">words seen</div></div>
+      <div class="stat-box"><div class="stat-num">${totalCorrect}</div><div class="stat-lbl">correct</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${overallAcc}%</div><div class="stat-lbl">accuracy</div></div>
+    </div>
+    <div class="stats-page">
+      <div class="stats-heading">accuracy by chapter</div>`;
+
+  for (const ch of ALL_CHAPTERS) {
+    let c=0, w=0, s=0;
+    for (const [jp] of VOCAB[ch]) {
+      const pje = prog[jp+'|jp-en'];
+      const pej = prog[jp+'|en-jp'];
+      if (pje||pej) s++;
+      c += (pje?.correct||0)+(pej?.correct||0);
+      w += (pje?.wrong||0)+(pej?.wrong||0);
+    }
+    const acc = (c+w) ? Math.round((c/(c+w))*100) : null;
+    const total = VOCAB[ch].length;
+    html += `
+      <div class="accuracy-bar-wrap">
+        <div class="accuracy-label">
+          <span>chapter ${ch}</span>
+          <span>${s}/${total} seen${acc!==null?` · ${acc}%`:''}</span>
+        </div>
+        <div class="accuracy-track">
+          <div class="accuracy-fill" style="width:${acc!==null?acc:0}%"></div>
+        </div>
+      </div>`;
+  }
+
+  if (weakTop.length) {
+    html += `<div class="stats-heading" style="margin-top:1.5rem">needs work</div><div class="weak-list">`;
+    for (const p of weakTop) {
+      html += `<div class="weak-item">
+        <div class="weak-jp">${p.jp}</div>
+        <div class="weak-en">${p.en}</div>
+        <div class="weak-score">${Math.round(p.acc*100)}% acc</div>
+      </div>`;
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="empty-msg" style="padding:1.5rem 0">practice more to see weak spots</div>';
+  }
+
+  html += `<div><button class="reset-btn" onclick="if(confirm('Reset all progress?')){resetProgress();render();}">reset all progress</button></div>`;
+  return html;
+}
+
+// ── Boot ──────────────────────────────────────────────────────
+resetDecks();
+render();
+</script>
+</body>
+</html>
