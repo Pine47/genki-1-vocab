@@ -1136,11 +1136,36 @@ function renderTyping() {
     </div>`;
 }
 
+// Normalise a raw string for comparison: lowercase, trim whitespace
 function normalize(s) {
-  return s.toLowerCase().trim()
-    .replace(/[()（）]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return s.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+// Produce all acceptable answer strings from an English vocab entry.
+// "...person (nationality)"  → ["person", "...person (nationality)"]
+// "to exist (inanimate)"     → ["to exist", "to exist inanimate"]
+// "sake; alcohol"            → ["sake", "alcohol"]
+// "AM"                       → ["am"]
+function expandAnswers(en) {
+  const set = new Set();
+  // Split on ; or / first
+  const segments = en.split(/[;\/]/).map(s => s.trim()).filter(Boolean);
+  for (const seg of segments) {
+    // Add the full normalised segment
+    set.add(normalize(seg));
+    // Strip leading dots/tildes (〜...) and surrounding whitespace
+    const stripped = seg.replace(/^[.．。〜～\s]+/, '').trim();
+    set.add(normalize(stripped));
+    // Also add version with parenthetical content completely removed
+    const noParens = stripped.replace(/\s*\(.*?\)/g, '').trim();
+    set.add(normalize(noParens));
+    // And the original segment with parens removed
+    const segNoParens = seg.replace(/\s*\(.*?\)/g, '').replace(/^[.．。〜～\s]+/, '').trim();
+    set.add(normalize(segNoParens));
+  }
+  // Remove empty strings
+  set.delete('');
+  return [...set];
 }
 
 function typeCheck() {
@@ -1156,22 +1181,15 @@ function typeCheck() {
 
   let correct, answers;
   if (isJpEn) {
-    // Accept any part of slash-separated meanings, strip parentheticals
-    answers = cur.en.split(/[;\/]/).map(normalize);
-    correct = answers.some(a => val === a || a.startsWith(val) === false && val === a);
-    // simpler: exact match any answer segment
+    answers = expandAnswers(cur.en);
     correct = answers.some(a => val === a);
-    // also accept if val is contained in one of the answers (for long meanings)
-    if (!correct) correct = answers.some(a => a === val);
   } else {
-    // Accept romaji reading
     answers = [normalize(cur.read), normalize(cur.jp)];
     correct = answers.some(a => val === a);
-    // also accept reading without long vowel markers
-    if (!correct) correct = normalize(cur.read) === val;
   }
 
-  const maxLen = isJpEn ? Math.max(...answers.map(a=>a.length)) + 2 : normalize(cur.read).length + 2;
+  // Trigger wrong when input is clearly longer than any valid answer
+  const maxLen = Math.max(...answers.map(a => a.length)) + 2;
 
   if (correct) {
     inp.classList.add('correct');
