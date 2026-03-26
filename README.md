@@ -1,0 +1,1 @@
+# genki-1-vocab
