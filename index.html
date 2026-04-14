@@ -220,6 +220,36 @@
     margin-top: 8px;
     letter-spacing: 0.08em;
   }
+
+  /* Furigana */
+  ruby { ruby-align: center; }
+  rt {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.22em;
+    color: var(--text3);
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+  .answer-big ruby rt { color: rgba(200,169,110,0.6); }
+
+  .furigana-toggle {
+    padding: 4px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    color: var(--text3);
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.04em;
+    margin-left: auto;
+  }
+  .furigana-toggle.on {
+    border-color: rgba(200,169,110,0.3);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
   .word-meta {
     font-size: 11px;
     color: var(--text3);
@@ -922,6 +952,7 @@ function resetProgress() { const d = loadData(); d.progress = {}; d.history = []
 let activeChapters = new Set(ALL_CHAPTERS);
 let currentTab = 'flashcard';
 let direction = 'jp-en'; // 'jp-en' | 'en-jp' | 'both'
+let showFurigana = false;
 
 let flashState = { deck: [], idx: 0, revealed: false, sessionCorrect: 0, sessionWrong: 0 };
 let typeState  = { deck: [], idx: 0, answered: false, sessionCorrect: 0, sessionWrong: 0 };
@@ -1008,18 +1039,87 @@ function buildChapterControls() {
     <button class="dir-btn ${direction==='en-jp'?'active':''}" onclick="setDir('en-jp')">EN → JP</button>
     <button class="dir-btn ${direction==='both'?'active':''}" onclick="setDir('both')">both</button>
   </div>`;
-  // Chapter pills
+  // Chapter pills + furigana toggle
   let pillsHtml = `<div class="chapter-row"><span class="chapter-label">chapters</span><div class="chapter-pills">`;
   const allOn = activeChapters.size === ALL_CHAPTERS.length;
   pillsHtml += `<button class="ch-pill on all-btn ${allOn?'':'dim-all'}" onclick="toggleAllChapters()">all</button>`;
   for (const ch of ALL_CHAPTERS) {
     pillsHtml += `<button class="ch-pill ${activeChapters.has(ch)?'on':''}" onclick="toggleChapter(${ch})">${ch}</button>`;
   }
-  pillsHtml += `</div></div>`;
+  pillsHtml += `</div><button class="furigana-toggle${showFurigana?' on':''}" onclick="toggleFurigana()" title="show furigana">ふりがな</button></div>`;
   wrap.innerHTML = dirHtml + pillsHtml;
 }
 
 function setDir(d) { direction = d; resetDecks(); render(); }
+function toggleFurigana() { showFurigana = !showFurigana; render(); }
+
+// Returns JP text, optionally wrapped in <ruby> with furigana.
+// Only adds ruby when the reading differs from the surface form (i.e. kanji present).
+// Convert katakana to hiragana for reading comparisons
+function kataToHira(s) {
+  return s.replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+
+// Build furigana HTML by segmenting jp into kanji-runs and kana-runs,
+// then matching each kanji-run's reading using kana anchors from the full reading.
+// e.g. 朝ごはん/あさごはん → <ruby>朝<rt>あさ</rt></ruby>ごはん
+// e.g. 引き出し/ひきだし  → <ruby>引<rt>ひ</rt></ruby>き<ruby>出<rt>だ</rt></ruby>し
+function buildFurigana(jp, read) {
+  // Segment jp into alternating kanji-runs and kana-runs
+  const segs = [];
+  let cur = '', curKanji = null;
+  for (const ch of jp) {
+    const isKanji = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(ch);
+    if (curKanji === null) curKanji = isKanji;
+    if (isKanji === curKanji) { cur += ch; }
+    else { segs.push({ t: cur, k: curKanji }); cur = ch; curKanji = isKanji; }
+  }
+  if (cur) segs.push({ t: cur, k: curKanji });
+
+  // No kanji found — no furigana needed
+  if (!segs.some(s => s.k)) return jp;
+
+  const hread = kataToHira(read);
+  let result = '';
+  let rpos = 0;
+
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i];
+    if (!seg.k) {
+      // Kana segment — advance rpos past the matching hiragana in the reading
+      const hkana = kataToHira(seg.t);
+      const found = hread.indexOf(hkana, rpos);
+      if (found !== -1) rpos = found + hkana.length;
+      result += seg.t;
+    } else {
+      // Kanji segment — find its slice of the reading using the next kana as an anchor
+      let kanjiRead;
+      const next = segs[i + 1];
+      if (next && !next.k) {
+        const hNext = kataToHira(next.t);
+        const found = hread.indexOf(hNext, rpos);
+        if (found !== -1) {
+          kanjiRead = hread.slice(rpos, found);
+          rpos = found;
+        } else {
+          kanjiRead = hread.slice(rpos);
+          rpos = hread.length;
+        }
+      } else {
+        // End of word or consecutive kanji — take rest of reading
+        kanjiRead = hread.slice(rpos);
+        rpos = hread.length;
+      }
+      result += kanjiRead ? `<ruby>${seg.t}<rt>${kanjiRead}</rt></ruby>` : seg.t;
+    }
+  }
+  return result;
+}
+
+function jpDisplay(jp, read) {
+  if (!showFurigana || jp === read) return jp;
+  return buildFurigana(jp, read);
+}
 function toggleChapter(ch) {
   if (activeChapters.has(ch)) { if (activeChapters.size > 1) activeChapters.delete(ch); }
   else activeChapters.add(ch);
@@ -1049,12 +1149,13 @@ function renderFlashcard() {
   const { total, seen, pct } = getStats();
   const cur = st.deck[st.idx % st.deck.length];
   const isJpEn = cur.dir === 'jp-en';
+  const hasKanji = cur.jp !== cur.read;
   const promptContent = isJpEn
-    ? `<div class="word-jp">${cur.jp}</div>${cur.read !== cur.jp ? `<div class="word-reading">${cur.read}</div>` : ''}`
+    ? `<div class="word-jp">${jpDisplay(cur.jp, cur.read)}</div>`
     : `<div class="word-en">${cur.en}</div>`;
   const answerContent = isJpEn
     ? `<div class="answer-big ${st.revealed?'show':''}">${cur.en}</div>`
-    : `<div class="answer-big jp ${st.revealed?'show':''}">${cur.jp}</div>${cur.read !== cur.jp ? `<div class="answer-reading ${st.revealed?'show':''}">${cur.read}</div>` : ''}`;
+    : `<div class="answer-big jp ${st.revealed?'show':''}">${jpDisplay(cur.jp, cur.read)}</div>`;
   return `
     <div class="stats-row">
       <div class="stat-box"><div class="stat-num" style="color:var(--accent)">${pct}%</div><div class="stat-lbl">seen</div></div>
@@ -1105,8 +1206,9 @@ function renderTyping() {
   const { total, seen, pct } = getStats();
   const cur = st.deck[st.idx % st.deck.length];
   const isJpEn = cur.dir === 'jp-en';
+  const hasKanji = cur.jp !== cur.read;
   const promptContent = isJpEn
-    ? `<div class="word-jp">${cur.jp}</div>${cur.read !== cur.jp ? `<div class="word-reading">${cur.read}</div>` : ''}`
+    ? `<div class="word-jp">${jpDisplay(cur.jp, cur.read)}</div>`
     : `<div class="word-en">${cur.en}</div>`;
   const hint = isJpEn ? 'type the English meaning' : 'type the Japanese (romaji or kana)';
   return `
